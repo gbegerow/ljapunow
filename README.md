@@ -1,0 +1,1 @@
+A little playing around with Ljapunow-Markus diagrams
