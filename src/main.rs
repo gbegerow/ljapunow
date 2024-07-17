@@ -11,8 +11,6 @@
 use minifb::{Key, Scale, ScaleMode, Window, WindowOptions};
 use std::env;
 
-#[allow(dead_code)]
-
 const WIDTH: usize = 800;
 const HEIGHT: usize = 800;
 const ITERATION_DEPTH: u32 = 300;
@@ -154,15 +152,17 @@ fn map_byte(val: f64, start1: f64, stop1: f64, start2: f64, stop2: f64, shift: u
 const RED_SHIFT: u32 = 16;
 const GREEN_SHIFT: u32 = 8;
 const BLUE_SHIFT: u32 = 0;
+#[allow(dead_code)]
 fn color_ramp(lambda: f64) -> u32 {
-    map_byte(lambda, -2.0, 0.5, 0.0, 255.0, RED_SHIFT)
-        + map_byte(lambda, -0.5, 0.0, 196.0, 255.0, GREEN_SHIFT)
-    // + map_byte(lambda, -2.5, 0.5, 196.0, 255.0, BLUE_SHIFT)
+    map_byte(lambda, -2.0, 0.5, 196.0, 255.0, RED_SHIFT)
+        + map_byte(lambda, -0.5, 0.0, 0.0, 255.0, GREEN_SHIFT)
+        + map_byte(lambda, -2.5, 0.5, 10.0, 55.0, BLUE_SHIFT)
 }
 
+#[allow(dead_code)]
 fn color_gradient(lambda: f64) -> u32 {
-    let gradient = vec![0x161c31, 0x613c62, 0xb75f74, 0xf29a6b, 0xfaec70];
-    let ranges = vec![-2.5, -1.5, -0.8, -0.2, 0.0, 4.0];
+    let gradient = [0x161c31, 0x613c62, 0xb75f74, 0xf29a6b, 0xfaec70];
+    let ranges = [-2.5, -1.5, -0.8, -0.2, 0.0, 4.0];
 
     // find the range via simple search, no need for binary
     let mut pos = 1;
@@ -173,5 +173,6 @@ fn color_gradient(lambda: f64) -> u32 {
     // -0.3 -> pos 3 -> gradient[2]..gradient[3]
     let g1 = gradient[pos - 1] as f64;
     let g2 = gradient[pos] as f64;
+    // todo: interpolate in hsl or lab space, rgb is not good for linear interpolation
     map(lambda, ranges[pos - 1], ranges[pos], g1, g2) as u32
 }
