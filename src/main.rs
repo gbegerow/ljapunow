@@ -13,7 +13,7 @@ use std::env;
 
 const WIDTH: usize = 800;
 const HEIGHT: usize = 800;
-const ITERATION_DEPTH: u32 = 300;
+const ITERATION_DEPTH: u32 = 300; // everything from 100+ seems to be fine
 const WARMUP: u32 = 20;
 
 fn main() {
@@ -27,7 +27,7 @@ fn main() {
         .collect::<Vec<_>>();
     let seq_len = sequence_rule.len();
 
-    // todo: read ranges from args
+    // todo: read ranges from args,
     let x_min = 3.4;
     let x_max = 4.0;
     let y_min = 2.5;
@@ -61,19 +61,17 @@ fn main() {
         let mut lambda = 0.0;
 
         for n in 0..ITERATION_DEPTH {
-            // ignore the first iterations or we always have -inf as first value as log(1-2*0.5) = -inf
+            // ignore the first iterations or we always have -inf as first value as log(1-2*0.5) = log(0) = -inf
             if n > WARMUP || x_n != 0.5 {
                 // sum for ljapunow exponent
                 lambda += (r(n) * (1.0 - 2.0 * x_n)).abs().ln();
             }
 
-            // iterate x_n
+            // iterate x to next value
             x_n = r(n) * x_n * (1.0 - x_n);
 
-            if lambda > 1e12 {
-                break;
-            }
-            if lambda < -1e12 {
+            // shortcut if we are already out of bounds
+            if lambda > 1e12 || lambda < -1e12 {
                 break;
             }
         }
@@ -87,7 +85,7 @@ fn main() {
         }
         // println!("lambda {lambda} a {a} b {b}");
 
-        // map to grayscale (?)
+        // map to color
         *pixel = if lambda > 0.0 {
             0x00
         } else {
@@ -126,18 +124,18 @@ fn init_window() -> (Vec<u32>, Window) {
         },
     )
     .expect("Unable to create the window");
-
     window.set_target_fps(60);
-
     window.set_background_color(0, 0, 20);
 
     (buffer, window)
 }
 
+// map / lerp between to ranges
 fn map(val: f64, start1: f64, stop1: f64, start2: f64, stop2: f64) -> f64 {
     start2 + (stop2 - start2) * ((val - start1) / (stop1 - start1))
 }
 
+// map to a byte range and shift in target range. 0 for values outside of range.
 fn map_byte(val: f64, start1: f64, stop1: f64, start2: f64, stop2: f64, shift: u32) -> u32 {
     if val < start1 || val > stop1 {
         return 0;
@@ -152,6 +150,7 @@ fn map_byte(val: f64, start1: f64, stop1: f64, start2: f64, stop2: f64, shift: u
 const RED_SHIFT: u32 = 16;
 const GREEN_SHIFT: u32 = 8;
 const BLUE_SHIFT: u32 = 0;
+// simple RGB ramp
 #[allow(dead_code)]
 fn color_ramp(lambda: f64) -> u32 {
     map_byte(lambda, -2.0, 0.5, 196.0, 255.0, RED_SHIFT)
@@ -159,6 +158,7 @@ fn color_ramp(lambda: f64) -> u32 {
         + map_byte(lambda, -2.5, 0.5, 10.0, 55.0, BLUE_SHIFT)
 }
 
+// interpolate along a color gradient
 #[allow(dead_code)]
 fn color_gradient(lambda: f64) -> u32 {
     let gradient = [0x161c31, 0x613c62, 0xb75f74, 0xf29a6b, 0xfaec70];
