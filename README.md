@@ -1,1 +1,2 @@
-A little playing around with Ljapunow-Markus diagrams
+A little playing around with Ljapunow-Markus diagrams.
+![Ljapunow-Markus diagram](ljapunow-markus.jpg)
